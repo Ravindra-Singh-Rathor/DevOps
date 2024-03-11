@@ -1,0 +1,36 @@
+steps:
+  # Use the docker cloud builder image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$devops-ravindra/ravindra-100900083:$COMMIT_SHA', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$devops-ravindra/ravindra-100900083:$COMMIT_SHA']
+  options:
+    # Set the defaultLogsBucketBehavior to REGIONAL_USER_OWNED_BUCKET
+    logging: 'REGIONAL_USER_OWNED_BUCKET'
+
+# Create a Cloud Build Trigger
+substitutions:
+  _CLOUD_RUN_SERVICE: 'ravindra-100900083'
+  _BRANCH: '.*'
+  _REPO_NAME: 'ravindra-100900083'
+triggers:
+  - name: 'dc-ravindra-100900083'
+    description: 'Trigger for ravindra-100900083 repository'
+    trigger_template:
+      project: $devops-ravindra
+      repoName: $_REPO_NAME
+      branchName: $_BRANCH
+      substitutions:
+        _CLOUD_RUN_SERVICE: $_CLOUD_RUN_SERVICE
+        _BRANCH: $_BRANCH
+        _REPO_NAME: $_REPO_NAME
+    filename: 'cloudbuild.yaml'
+    build:
+      steps:
+        - name: 'gcr.io/cloud-builders/docker'
+          args: ['build', '-t', 'gcr.io/$PROJECT_ID/ravindra-100900083:$COMMIT_SHA', '.']
+        - name: 'gcr.io/cloud-builders/docker'
+          args: ['push', 'gcr.io/$devops-ravindra/ravindra-100900083:$COMMIT_SHA']
+        options:
+          logging: 'REGIONAL_USER_OWNED_BUCKET'
+        waitFor: ['-']
